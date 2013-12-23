@@ -34,7 +34,7 @@ setup(
     name='wgetdb',
     version="0.1.0",
     description='Download and store webpages in a sqlite database',
-    long_description=read("README.rst"),
+    long_description=read("README.md"),
     author='Akira Kozakai',
     author_email='akiraak@gmail.com',
     url='https://github.com/akiraak/wgetdb',
