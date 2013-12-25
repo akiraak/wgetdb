@@ -35,10 +35,7 @@ def download_url(url):
     return response.read()
 
 
-def store_data(db_path, url, data, label):
-    con = sqlite3.connect(db_path, isolation_level=None)
-
-    # Create table
+def create_table(con):
     cur = con.execute(
         "SELECT * FROM sqlite_master WHERE type='table' and name=?",
         (TABLE_NAME,))
@@ -55,12 +52,21 @@ def store_data(db_path, url, data, label):
         """ % TABLE_NAME
         con.execute(sql)
 
-    # Add record
+
+def insert_data(con, url, data, label):
     sql = ('INSERT INTO %s ("url", "label", "data", "created_date")'
            'VALUES (?, ?, ?, ?);') % TABLE_NAME
     args = (url, label, buffer(data), datetime.datetime.utcnow())
     con.execute(sql, args)
-    con.close()
+
+
+def store_data(db_path, url, data, label):
+    con = sqlite3.connect(db_path, isolation_level=None)
+    try:
+        create_table(con)
+        insert_data(con, url, data, label)
+    finally:
+        con.close()
 
 
 def main():
