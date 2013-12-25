@@ -25,7 +25,7 @@ __author__ = "Akira Kozakai"
 __license__ = "MIT"
 
 TABLE_NAME = "datas"
-URLOPEN_TIME_OUT = 3
+URLOPEN_TIME_OUT = 10
 
 
 def urldata(url):
