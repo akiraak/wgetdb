@@ -25,17 +25,17 @@ __author__ = "Akira Kozakai"
 __license__ = "MIT"
 
 TABLE_NAME = "datas"
-URLOPEN_TIME_OUT = 10
+URLOPEN_TIMEOUT = 10
 
 
-def urldata(url):
-    response = urllib2.urlopen(url, timeout=URLOPEN_TIME_OUT)
+def download_url(url):
+    response = urllib2.urlopen(url, timeout=URLOPEN_TIMEOUT)
     if response.code != 200:
         return None
     return response.read()
 
 
-def add_db(db_path, url, data, label):
+def store_data(db_path, url, data, label):
     con = sqlite3.connect(db_path, isolation_level=None)
 
     # Create table
@@ -59,7 +59,7 @@ def add_db(db_path, url, data, label):
     sql = ('INSERT INTO %s ("url", "label", "data", "created_date")'
            'VALUES (?, ?, ?, ?);') % TABLE_NAME
     args = (url, label, buffer(data), datetime.datetime.utcnow())
-    cur = con.execute(sql, args)
+    con.execute(sql, args)
     con.close()
 
 
@@ -68,19 +68,17 @@ def main():
         args = docopt(__doc__, version=__version__)
         db_path = args.get('<database_path>')
         url = args.get('<url>')
-        label = args.get('--label')
-        if not label:
-            label = None
-        data = urldata(url)
+        label = args.get('--label') or None
+        data = download_url(url)
 
         if data:
-            add_db(db_path, url, data, label)
+            store_data(db_path, url, data, label)
             print('SUCCESS!')
     except Exception as e:
         print(u'=== ERROR ===')
-        print(u'type:' + str(type(e)))
-        print(u'args:' + str(e.args))
-        print(u'message:' + e.message)
+        print(u'type:{0}'.format(type(e)))
+        print(u'args:{0}'.format(e.args))
+        print(u'message:{0}'.format(e.message))
 
 
 if __name__ == '__main__':
