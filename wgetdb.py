@@ -27,7 +27,7 @@ TABLE_NAME = "datas"
 URLOPEN_TIMEOUT = 10
 
 
-class WebDB(object):
+class WgetDB(object):
     def __init__(self, db_path):
         self.con = sqlite3.connect(db_path, isolation_level=None)
         self.create_table()
@@ -86,8 +86,8 @@ def main():
         db_path = args.get('<database_path>')
         url = args.get('<url>')
         label = args.get('<label>')
-        webdb = WebDB(db_path)
-        webdb.store(url, label)
+        wgetdb = WgetDB(db_path)
+        wgetdb.store(url, label)
         print('SUCCESS!')
     except Exception as e:
         print(u'=== ERROR ===')
