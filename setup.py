@@ -32,7 +32,7 @@ def read(fname):
 
 setup(
     name='wgetdb',
-    version="0.1.0",
+    version="0.1.1",
     description='Download and store webpages in a sqlite database',
     long_description=read("README.md"),
     author='Akira Kozakai',
