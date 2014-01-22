@@ -23,8 +23,19 @@ __version__ = "0.1.0"
 __author__ = "Akira Kozakai"
 __license__ = "MIT"
 
-TABLE_NAME = "datas"
 URLOPEN_TIMEOUT = 10
+TABLE_NAME = "datas"
+CREATE_TABLE_SQL = """
+    CREATE TABLE %s (
+        id INTEGER PRIMARY KEY,
+        url VARCHAR(4095) NOT NULL,
+        label VARCHAR(255) NOT NULL,
+        data BLOB NOT NULL,
+        created_date DATE NOT NULL,
+        modified_date DATE NOT NULL,
+        UNIQUE(url, label)
+    );
+""" % TABLE_NAME
 
 
 class WgetDB(object):
@@ -40,18 +51,7 @@ class WgetDB(object):
             "SELECT * FROM sqlite_master WHERE type='table' and name=?",
             (TABLE_NAME,))
         if cur.fetchone() is None:
-            sql = """
-                CREATE TABLE %s (
-                  id INTEGER PRIMARY KEY,
-                  url VARCHAR(4095) NOT NULL,
-                  label VARCHAR(255) NOT NULL,
-                  data BLOB NOT NULL,
-                  created_date DATE NOT NULL,
-                  modified_date DATE NOT NULL,
-                  UNIQUE(url, label)
-                );
-            """ % TABLE_NAME
-            self.con.execute(sql)
+            self.con.execute(CREATE_TABLE_SQL)
 
     def download_url(self, url):
         response = urllib2.urlopen(url, timeout=URLOPEN_TIMEOUT)
@@ -78,6 +78,27 @@ class WgetDB(object):
             self.insert_data(url, label, data)
         except sqlite3.IntegrityError as e:
             self.update_data(url, label, data)
+
+    def get(self, url, label):
+        sql = ('SELECT * FROM %s WHERE "url" = ? AND "label" = ?;') % TABLE_NAME
+        args = (url, label)
+        cur = self.con.execute(sql, args)
+        record = list(cur)
+        if len(record) > 0:
+            record = record[0]
+            return {'data': str(record[3]),
+                    'created_date': record[4],
+                    'modified_date': record[5]}
+        return None
+
+    def wget(self, url, label, compulsion_replace=False):
+        if compulsion_replace:
+            self.store(url, label)
+        data = self.get(url, label)
+        if not data:
+            self.store(url, label)
+            data = self.get(url, label)
+        return data
 
 
 def main():
