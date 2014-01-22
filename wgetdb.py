@@ -16,10 +16,11 @@ from __future__ import unicode_literals, print_function
 import datetime
 import urllib2
 import sqlite3
+from time import sleep
 from docopt import docopt
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.3"
 __author__ = "Akira Kozakai"
 __license__ = "MIT"
 
@@ -39,9 +40,10 @@ CREATE_TABLE_SQL = """
 
 
 class WgetDB(object):
-    def __init__(self, db_path):
+    def __init__(self, db_path, wait_before_wget=0):
         self.con = sqlite3.connect(db_path, isolation_level=None)
         self.create_table()
+        self.wait_before_wget = wait_before_wget
 
     def __del__(self):
          self.con.close()
@@ -54,6 +56,8 @@ class WgetDB(object):
             self.con.execute(CREATE_TABLE_SQL)
 
     def download_url(self, url):
+        if self.wait_before_wget:
+            sleep(self.wait_before_wget)
         response = urllib2.urlopen(url, timeout=URLOPEN_TIMEOUT)
         if response.code != 200:
             return None
