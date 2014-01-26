@@ -41,12 +41,19 @@ CREATE_TABLE_SQL = """
 
 class WgetDB(object):
     def __init__(self, db_path, wait_before_wget=0):
-        self.con = sqlite3.connect(db_path, isolation_level=None)
-        self.create_table()
+        self.db_path = db_path
         self.wait_before_wget = wait_before_wget
+        self._con = None
 
     def __del__(self):
          self.con.close()
+
+    @property
+    def con(self):
+        if not self._con:
+            self._con = sqlite3.connect(self.db_path, isolation_level=None)
+            self.create_table()
+        return self._con
 
     def create_table(self):
         cur = self.con.execute(
@@ -80,7 +87,7 @@ class WgetDB(object):
         data = self.download_url(url)
         try:
             self.insert_data(url, label, data)
-        except sqlite3.IntegrityError as e:
+        except sqlite3.IntegrityError as e: 
             self.update_data(url, label, data)
 
     def get(self, url, label):
